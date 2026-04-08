@@ -7,10 +7,10 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 
 FROM php:8.2-fpm-alpine
 
-RUN apk add --no-cache bash git libzip-dev oniguruma-dev icu-dev zlib-dev libpng libpng-dev libjpeg-turbo-dev freetype-dev curl
+RUN apk add --no-cache bash git libzip-dev oniguruma-dev icu-dev zlib-dev libpng libpng-dev libjpeg-turbo-dev freetype-dev curl postgresql-dev
 RUN docker-php-ext-configure zip
 RUN docker-php-ext-configure gd --with-jpeg --with-freetype
-RUN docker-php-ext-install pdo_mysql bcmath intl opcache zip gd
+RUN docker-php-ext-install pdo_mysql pdo_pgsql bcmath intl opcache zip gd
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
