@@ -19,26 +19,28 @@ WORKDIR /var/www/html
 COPY --from=vendor /var/www/html/vendor ./vendor
 COPY . .
 
-RUN sed -i 's|"autoload": {|&\n        "psr-4": {\n            "App\\\\Modules\\\\": "app/Modules/"\n        },|' composer.json
 RUN composer dump-autoload --optimize
 RUN php artisan package:discover --ansi
-RUN php artisan config:cache || true
 RUN php artisan route:cache || true
 RUN php artisan view:cache || true
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
 
 RUN mkdir -p /run/nginx
-RUN cat > /etc/nginx/nginx.conf <<'EOF'
+RUN cat > /usr/local/bin/docker-entrypoint.sh <<'EOF'
+#!/bin/sh
+
+PORT=${PORT:-8080}
+cat > /etc/nginx/nginx.conf <<NGINX
 events { worker_connections 1024; }
 http {
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
     sendfile       on;
-    keepalive_timeout  65;
+    keepalive_timeout 65;
 
     server {
-        listen 8080;
+        listen 0.0.0.0:${PORT};
         server_name _;
         root /var/www/html/public;
         index index.php index.html;
@@ -59,8 +61,13 @@ http {
         }
     }
 }
+NGINX
+
+php-fpm --nodaemonize &
+exec nginx -g 'daemon off;'
 EOF
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "php-fpm && nginx -g 'daemon off;'"]
+CMD ["sh", "/usr/local/bin/docker-entrypoint.sh"]
