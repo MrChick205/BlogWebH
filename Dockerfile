@@ -7,7 +7,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 
 FROM php:8.2-fpm-alpine
 
-RUN apk add --no-cache nginx bash git libzip-dev oniguruma-dev icu-dev zlib-dev libpng libpng-dev libjpeg-turbo-dev freetype-dev curl
+RUN apk add --no-cache bash git libzip-dev oniguruma-dev icu-dev zlib-dev libpng libpng-dev libjpeg-turbo-dev freetype-dev curl
 RUN docker-php-ext-configure zip
 RUN docker-php-ext-configure gd --with-jpeg --with-freetype
 RUN docker-php-ext-install pdo_mysql bcmath intl opcache zip gd
@@ -21,53 +21,8 @@ COPY . .
 
 RUN composer dump-autoload --optimize
 RUN php artisan package:discover --ansi
-RUN php artisan route:cache || true
-RUN php artisan view:cache || true
-
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
-
-RUN mkdir -p /run/nginx
-RUN cat > /usr/local/bin/docker-entrypoint.sh <<'EOF'
-#!/bin/sh
-
-PORT=${PORT:-8080}
-cat > /etc/nginx/nginx.conf <<NGINX
-events { worker_connections 1024; }
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-    sendfile       on;
-    keepalive_timeout 65;
-
-    server {
-        listen 0.0.0.0:${PORT};
-        server_name _;
-        root /var/www/html/public;
-        index index.php index.html;
-
-        location / {
-            try_files $uri $uri/ /index.php?$query_string;
-        }
-
-        location ~ \.php$ {
-            fastcgi_pass unix:/var/run/php-fpm.sock;
-            fastcgi_index index.php;
-            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-            include fastcgi_params;
-        }
-
-        location ~ /\.ht {
-            deny all;
-        }
-    }
-}
-NGINX
-
-php-fpm --nodaemonize &
-exec nginx -g 'daemon off;'
-EOF
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["sh", "/usr/local/bin/docker-entrypoint.sh"]
+CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8080} -t public public/index.php"]
