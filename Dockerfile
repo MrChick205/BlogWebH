@@ -3,7 +3,7 @@
 FROM composer:2 AS vendor
 WORKDIR /var/www/html
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
 FROM php:8.2-fpm-alpine
 
@@ -18,6 +18,8 @@ COPY . .
 
 RUN cp .env.example .env \
     && php artisan key:generate --ansi \
+    && composer dump-autoload --optimize \
+    && php artisan package:discover --ansi \
     && php artisan config:cache \
     && php artisan route:cache \
     && php artisan view:cache
