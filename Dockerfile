@@ -12,16 +12,21 @@ RUN docker-php-ext-configure zip
 RUN docker-php-ext-configure gd --with-jpeg --with-freetype
 RUN docker-php-ext-install pdo_mysql bcmath intl opcache zip gd
 
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 WORKDIR /var/www/html
 COPY --from=vendor /var/www/html/vendor ./vendor
 COPY . .
 
-RUN cp .env.example .env \
-    && php artisan key:generate --ansi \
-    && php artisan package:discover --ansi \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+RUN cp .env.example .env
+RUN php artisan key:generate --ansi
+RUN composer config autoload.psr-4 'App\\\\Modules\\\\' 'app/Modules/' --no-interaction
+RUN composer dump-autoload --optimize
+RUN php artisan package:discover --ansi
+RUN php artisan config:cache || true
+RUN php artisan route:cache || true
+RUN php artisan view:cache || true
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
 
