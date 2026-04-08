@@ -19,7 +19,7 @@ WORKDIR /var/www/html
 COPY --from=vendor /var/www/html/vendor ./vendor
 COPY . .
 
-RUN cp .env.example .env
+RUN ls -la .env* && cp .env.example .env || echo "Failed to copy .env.example"
 RUN php artisan key:generate --ansi
 RUN composer config autoload.psr-4 'App\\\\Modules\\\\' 'app/Modules/' --no-interaction
 RUN composer dump-autoload --optimize
