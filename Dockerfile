@@ -19,12 +19,6 @@ WORKDIR /var/www/html
 COPY --from=vendor /var/www/html/vendor ./vendor
 COPY . .
 
-RUN ls -la | head -20
-RUN ls -la .env* || echo "No .env files found"
-RUN if [ -f .env.example ]; then cp .env.example .env && echo "Copied .env.example to .env"; else echo ".env.example not found, creating empty .env"; touch .env; fi
-RUN echo "APP_KEY=" >> .env
-RUN ls -la .env
-RUN php artisan key:generate --ansi
 RUN sed -i 's|"autoload": {|&\n        "psr-4": {\n            "App\\\\Modules\\\\": "app/Modules/"\n        },|' composer.json
 RUN composer dump-autoload --optimize
 RUN php artisan package:discover --ansi
