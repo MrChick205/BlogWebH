@@ -31,7 +31,7 @@ RUN cat > /usr/local/bin/docker-entrypoint.sh <<'EOF'
 #!/bin/sh
 
 PORT=${PORT:-8080}
-cat > /etc/nginx/nginx.conf <<'NGINX'
+cat > /etc/nginx/nginx.conf <<NGINX
 events { worker_connections 1024; }
 http {
     include       /etc/nginx/mime.types;
@@ -40,7 +40,7 @@ http {
     keepalive_timeout 65;
 
     server {
-        listen ${PORT};
+        listen 0.0.0.0:${PORT};
         server_name _;
         root /var/www/html/public;
         index index.php index.html;
