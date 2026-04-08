@@ -1,0 +1,13 @@
+vendor
+node_modules
+npm-debug.log
+Dockerfile
+docker-compose.yml
+.git
+.gitignore
+storage/framework/cache/data
+storage/logs
+storage/debugbar
+.env
+.env.*
+/.vscode
