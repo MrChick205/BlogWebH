@@ -16,11 +16,9 @@ class AuthController extends Controller
     public function register(AuthRegisterRequest $request)
     {
         $user = $this->authService->register($request->validated());
-        $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
-            'token' => $token,
         ], 201);
     }
 
@@ -32,7 +30,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid email or password.'], 401);
         }
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        $token = $this->authService->createOrUpdateLoginToken($user);
 
         return response()->json([
             'user' => $user,
