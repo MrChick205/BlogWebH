@@ -18,7 +18,6 @@ COPY . .
 
 RUN cp .env.example .env \
     && php artisan key:generate --ansi \
-    && composer dump-autoload --optimize \
     && php artisan package:discover --ansi \
     && php artisan config:cache \
     && php artisan route:cache \
