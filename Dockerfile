@@ -4,6 +4,7 @@ FROM composer:2 AS vendor
 WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+RUN composer require cloudinary-labs/cloudinary-laravel --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 FROM php:8.2-fpm-alpine
 
