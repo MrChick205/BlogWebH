@@ -15,7 +15,6 @@ class MediaService
 
     public function __construct(private MediaRepository $repository)
     {
-        // Configure Cloudinary
         Configuration::instance([
             'cloud' => [
                 'cloud_name' => config('cloudinary.cloud_name'),
@@ -30,9 +29,6 @@ class MediaService
         $this->uploadApi = new UploadApi();
     }
 
-    /**
-     * Upload file to Cloudinary and save to database
-     */
     public function uploadFile(UploadedFile $file, string $folder = 'uploads'): Media
     {
         $user = Auth::user();
@@ -45,7 +41,6 @@ class MediaService
 
             $result = $this->uploadApi->upload($file->getRealPath(), $options);
 
-            // Save to database
             $mediaData = [
                 'user_id' => $user->id,
                 'public_id' => $result['public_id'],
