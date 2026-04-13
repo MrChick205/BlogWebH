@@ -31,9 +31,6 @@ class PostService
         Log::info('PostService: Cloudinary initialized successfully');
     }
 
-    /**
-     * Create a new post with optional media files
-     */
     public function createPost(array $data, ?array $files = null): Post
     {
         $user = Auth::user();
@@ -69,9 +66,6 @@ class PostService
         }
     }
 
-    /**
-     * Update an existing post
-     */
     public function updatePost($postId, array $data, ?array $files = null): ?Post
     {
         $user = Auth::user();
@@ -83,7 +77,6 @@ class PostService
 
         DB::beginTransaction();
         try {
-            // Update post
             $postData = array_filter([
                 'content' => $data['content'] ?? $post->content,
                 'privacy' => $data['privacy'] ?? $post->privacy,
@@ -91,7 +84,6 @@ class PostService
 
             $updatedPost = $this->postRepository->update($postId, $postData);
 
-            // Upload new media files if provided
             if ($files && count($files) > 0) {
                 $this->uploadMediaFiles($postId, $files);
             }
@@ -110,9 +102,6 @@ class PostService
         }
     }
 
-    /**
-     * Delete a post and its media
-     */
     public function deletePost($postId): bool
     {
         $user = Auth::user();
@@ -124,12 +113,10 @@ class PostService
 
         DB::beginTransaction();
         try {
-            // Delete media files from Cloudinary
             foreach ($post->media as $media) {
                 $this->deleteFromCloudinary($media->url);
             }
 
-            // Delete post (media will be deleted via cascade)
             $this->postRepository->delete($postId);
 
             DB::commit();
@@ -146,9 +133,6 @@ class PostService
         }
     }
 
-    /**
-     * Get user's posts
-     */
     public function getUserPosts(int $userId, int $perPage = 20)
     {
         return $this->postRepository->findByUser($userId, $perPage);
@@ -181,9 +165,6 @@ class PostService
         }
     }
 
-    /**
-     * Upload single file to Cloudinary
-     */
     private function uploadSingleFile(int $postId, UploadedFile $file): void
     {
         try {
@@ -217,7 +198,6 @@ class PostService
 
             $result = $this->uploadApi->upload($file->getRealPath(), $options);
 
-            // Save to database
             $mediaData = [
                 'post_id' => $postId,
                 'url' => $result['secure_url'],
@@ -236,13 +216,9 @@ class PostService
         }
     }
 
-    /**
-     * Delete file from Cloudinary
-     */
     private function deleteFromCloudinary(string $url): void
     {
         try {
-            // Extract public_id from Cloudinary URL
             $path = parse_url($url, PHP_URL_PATH);
             $pathParts = explode('/', $path);
             $filename = end($pathParts);
@@ -254,7 +230,6 @@ class PostService
                 'error' => $e->getMessage(),
                 'url' => $url,
             ]);
-            // Don't throw exception here, continue with database deletion
         }
     }
 }
