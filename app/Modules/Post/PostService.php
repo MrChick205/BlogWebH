@@ -15,7 +15,6 @@ class PostService
 
     public function __construct(private PostRepository $postRepository, private MediaRepository $mediaRepository)
     {
-        // Configure Cloudinary
         Configuration::instance([
             'cloud' => [
                 'cloud_name' => config('cloudinary.cloud_name'),

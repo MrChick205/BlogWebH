@@ -4,6 +4,8 @@ namespace App\Modules\Post;
 
 use App\Modules\Media\Media;
 use App\Modules\User\User;
+use App\Modules\Comment\Comment;
+use App\Modules\Reaction\Reaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,6 +33,16 @@ class Post extends Model
     public function media(): HasMany
     {
         return $this->hasMany(Media::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(Reaction::class);
     }
 
     public function isPublic(): bool
